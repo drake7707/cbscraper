@@ -80,6 +80,12 @@ namespace CoolBlueScraper
                     foreach (var link in links)
                     {
                         var detailUrl = link.GetAttributeValue("href", "");
+                        if(!detailUrl.StartsWith("http"))
+                        {
+                            string prefix = url.Substring(0, url.Length - new Uri(url).PathAndQuery.Length);
+                            detailUrl = prefix + detailUrl;
+                        }
+                            
                         if (!string.IsNullOrEmpty(detailUrl))
                         {
                             if (!string.IsNullOrEmpty(detailUrl))
