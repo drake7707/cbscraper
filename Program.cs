@@ -76,19 +76,25 @@ namespace CoolBlueScraper
 
                     var nextPageLinkNode = doc.DocumentNode.QuerySelector(".pagination__link[rel='next']");
 
-                    var links = doc.DocumentNode.QuerySelectorAll(".product__title");
+                    var links = doc.DocumentNode.QuerySelectorAll(".product-card__title a");
                     foreach (var link in links)
                     {
                         var detailUrl = link.GetAttributeValue("href", "");
                         if (!string.IsNullOrEmpty(detailUrl))
                         {
+                            if (!string.IsNullOrEmpty(detailUrl))
+                            {
+                                var bUrl = new Uri(url).GetLeftPart(UriPartial.Authority);
+                                detailUrl = bUrl + detailUrl;
+                            }
+
                             try
                             {
                                 Console.Error.WriteLine("Fetching " + detailUrl);
                                 var details = await GetDetails(detailUrl);
 
                                 objects.Add(details);
-                           //     Console.WriteLine(string.Join(Environment.NewLine, details.Select(pair => pair.Key + "=" + pair.Value)));
+                                //     Console.WriteLine(string.Join(Environment.NewLine, details.Select(pair => pair.Key + "=" + pair.Value)));
 
                                 Task.Delay(500);
                             }
@@ -124,15 +130,15 @@ namespace CoolBlueScraper
             var doc = await web.LoadFromWebAsync(detailUrl);
 
             Dictionary<string, string> props = new Dictionary<string, string>();
-            var name = doc.DocumentNode.QuerySelector("meta[property='og:title']")?.GetAttributeValue("content", "");
+            var name = doc.DocumentNode.QuerySelector(".js-product-name")?.InnerText;
             props["name"] = name;
 
-            var price = doc.DocumentNode.QuerySelector(".sales-price__current").InnerText.Trim();
+            var price = doc.DocumentNode.QuerySelector(".sales-price__current")?.InnerText.Trim();
             props["price"] = price;
 
             props["url"] = detailUrl;
 
-            var specsItems = doc.DocumentNode.QuerySelectorAll(".product-specs__list-item");
+            var specsItems = doc.DocumentNode.QuerySelectorAll(".product-specs dl");
             foreach (var item in specsItems)
             {
                 var key = item.QuerySelector(".product-specs__help-title")?.InnerText?.Trim();
